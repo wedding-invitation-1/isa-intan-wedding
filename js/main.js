@@ -23,7 +23,7 @@ const CONFIG = {
   // ▼ Firebase Realtime Database URL
   // Daftar gratis di https://firebase.google.com → buat project → Realtime Database
   // Ganti URL di bawah dengan URL database Anda (akhiri dengan /)
-  firebaseUrl: 'https://couple-gallery-isa-default-rtdb.asia-southeast1.firebasedatabase.app//',
+  firebaseUrl: 'https://couple-gallery-isa-default-rtdb.asia-southeast1.firebasedatabase.app/',
 };
 
 /* =========================================
