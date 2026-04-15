@@ -4,6 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Undangan Pernikahan – Isa & Intan</title>
+  <!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  ✏️  PANDUAN EDIT CEPAT                              ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  1. HITUNG MUNDUR                                    ║
+  ║     Buka js/main.js → ubah baris:                   ║
+  ║     weddingDate: new Date('YYYY-MM-DDTHH:MM:SS')    ║
+  ║     Contoh: new Date('2025-12-25T08:00:00')          ║
+  ║     Hitung mundur otomatis menyesuaikan!             ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  2. DATABASE UCAPAN (Firebase – Gratis)              ║
+  ║     a. Buka https://firebase.google.com              ║
+  ║     b. Buat project baru                             ║
+  ║     c. Build → Realtime Database → Create database   ║
+  ║     d. Rules → set "read": true, "write": true       ║
+  ║     e. Salin URL database (akhiri dengan /)          ║
+  ║     f. Tempel di js/main.js → CONFIG.firebaseUrl    ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  3. NOMOR WA & EMAIL                                 ║
+  ║     Buka js/main.js → ubah CONFIG.waNumber & email  ║
+  ╚══════════════════════════════════════════════════════╝
+  -->
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,7 +53,13 @@
       <span class="cover-amp">&</span>
       <span>Intan</span>
     </div>
-    <p class="cover-date">Sabtu, 14 Juni 2025</p>
+    <p class="cover-date">Sabtu, 22 November 2030</p>
+    <!-- Tombol musik muncul di cover -->
+    <div id="music-cover" style="margin-top:1.5rem;">
+      <button id="music-btn" onclick="toggleMusic()" title="Putar / Pause musik">
+        🎵 Putar Musik
+      </button>
+    </div>
     <button class="btn-open" onclick="openInvitation()">✉ Buka Undangan</button>
   </div>
 </div>
@@ -42,6 +70,16 @@
      ============================================= -->
 <nav id="navbar">
   <div class="nav-logo">Isa & Intan</div>
+
+  <!-- Music player floating (navbar) -->
+  <div id="music-player" style="display:none; align-items:center; gap:.5rem; margin-left:auto; margin-right:1rem;">
+    <button id="music-nav-btn" onclick="toggleMusic()" title="Putar / Pause musik"
+      style="background:none;border:1px solid var(--gold-light);color:var(--gold-dark);
+             font-size:.7rem;letter-spacing:.1em;padding:.3rem .8rem;cursor:pointer;
+             border-radius:20px;transition:all .25s;white-space:nowrap;">
+      ⏸ Pause
+    </button>
+  </div>
 
   <!-- Hamburger button (mobile/tablet) -->
   <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -74,9 +112,9 @@
     </div>
     <div class="hero-date-badge">
       <span class="badge-dot"></span>
-      Sabtu, 14 Juni 2030
+      Sabtu, 22 November 2030
       <span class="badge-dot"></span>
-      Kota Depok
+      Bogor
     </div>
   </div>
 </section>
@@ -115,14 +153,14 @@
     <!-- Mempelai Pria -->
     <div class="couple-card">
       <div class="couple-photo">
-        <!-- Ganti baris di bawah dengan: <img src="images/pengantin/isa.jpg" alt="Muhamad Isa Firdaus"> -->
+        <!-- Ganti baris di bawah dengan: <img src="images/pengantin/isa.jpg" alt="Isa Firdaus"> -->
         🤵
       </div>
-      <div class="couple-name">Muhamad Isa Firdaus</div>
-      <div class="couple-fullname">Muhamad Isa Firdaus, S.Kom.</div>
+      <div class="couple-name">Isa</div>
+      <div class="couple-fullname">Muhamad Isa Firdaus</div>
       <div class="couple-parents">
-        Putra pertama dari<br/>
-        <strong>Bapak Agus Purwanto</strong> &amp; <strong>Ibu Ernawati</strong>
+        Putra dari<br/>
+        <strong>Bapak -</strong> &amp; <strong>Ibu -</strong>
       </div>
     </div>
 
@@ -133,14 +171,14 @@
     <!-- Mempelai Wanita -->
     <div class="couple-card">
       <div class="couple-photo">
-        <!-- Ganti baris di bawah dengan: <img src="images/pengantin/intan.jpg" alt="Intan Hastari Prasetiani"> -->
+        <!-- Ganti baris di bawah dengan: <img src="images/pengantin/intan.jpg" alt="Intan Hastari"> -->
         👰
       </div>
-      <div class="couple-name">Intan Hastari Prasetiani</div>
-      <div class="couple-fullname">Intan Hastari Prasetiani, S.Ap.</div>
+      <div class="couple-name">Intan</div>
+      <div class="couple-fullname">Intan Hastari Prasetiani</div>
       <div class="couple-parents">
-        Putri keempat dari<br/>
-        <strong>Bapak pamuji agustiar masudi</strong> &amp; <strong>Ibu siti maemunah</strong>
+        Putri dari<br/>
+        <strong>Bapak -</strong> &amp; <strong>Ibu -</strong>
       </div>
     </div>
 
@@ -162,7 +200,7 @@
         <div class="event-type">Akad Nikah</div>
         <div class="event-name">Ijab Qabul</div>
         <div class="event-detail">
-          <strong>Sabtu, 14 Juni 2030</strong><br/>
+          <strong>Sabtu, 22 November 2030</strong><br/>
           08.00 – 10.00 WIB<br/>
           Masjid Baiturrahman<br/>
           Jl. Margonda Raya No. 1, Depok
@@ -174,7 +212,7 @@
         <div class="event-type">Resepsi Pernikahan</div>
         <div class="event-name">Walimatul Ursy</div>
         <div class="event-detail">
-          <strong>Sabtu, 14 Juni 2025</strong><br/>
+          <strong>Sabtu, 22 November 2030</strong><br/>
           11.00 – 15.00 WIB<br/>
           Gedung Graha Pesona<br/>
           Jl. Siliwangi No. 45, Depok
@@ -287,34 +325,33 @@
     <div class="family-grid">
       <div class="family-card">
         <div class="family-avatar">👨</div>
-        <!-- <div class="family-avatar"><img src="images/keluarga/ahmad-fauzi.jpg" alt="H. Ahmad Fauzi"></div> -->
-        <div class="family-name">H. Ahmad Fauzi</div>
+        <div class="family-name">-</div>
         <div class="family-role">Ayah Mempelai Pria</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👩</div>
-        <div class="family-name">Hj. Siti Rohimah</div>
+        <div class="family-name">-</div>
         <div class="family-role">Ibu Mempelai Pria</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👦</div>
-        <div class="family-name">Dicky Firmansyah</div>
-        <div class="family-role">Adik Mempelai Pria</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Pria</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👧</div>
-        <div class="family-name">Rini Firmansyah</div>
-        <div class="family-role">Adik Mempelai Pria</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Pria</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👴</div>
-        <div class="family-name">H. Maman Suparman</div>
-        <div class="family-role">Kakek (dari Ayah)</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Kakek Mempelai Pria</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👵</div>
-        <div class="family-name">Hj. Tati Suparman</div>
-        <div class="family-role">Nenek (dari Ayah)</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Nenek Mempelai Pria</div>
       </div>
     </div>
   </div>
@@ -324,33 +361,33 @@
     <div class="family-grid">
       <div class="family-card">
         <div class="family-avatar">👨</div>
-        <div class="family-name">Drs. Budi Santoso</div>
+        <div class="family-name">-</div>
         <div class="family-role">Ayah Mempelai Wanita</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👩</div>
-        <div class="family-name">Dewi Lestari</div>
+        <div class="family-name">-</div>
         <div class="family-role">Ibu Mempelai Wanita</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👧</div>
-        <div class="family-name">Ninda Rahmawati</div>
-        <div class="family-role">Kakak Mempelai Wanita</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Wanita</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👦</div>
-        <div class="family-name">Fajar Santoso</div>
-        <div class="family-role">Adik Mempelai Wanita</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Wanita</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👴</div>
-        <div class="family-name">H. Rahmat Hidayat</div>
-        <div class="family-role">Kakek (dari Ibu)</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Kakek Mempelai Wanita</div>
       </div>
       <div class="family-card">
         <div class="family-avatar">👵</div>
-        <div class="family-name">Hj. Umi Kalsum</div>
-        <div class="family-role">Nenek (dari Ibu)</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Nenek Mempelai Wanita</div>
       </div>
     </div>
   </div>
@@ -511,7 +548,7 @@
       "Kami mengundang Anda dengan sepenuh hati untuk turut menyaksikan dan mendoakan kami dalam memulai babak baru kehidupan ini."
     </p>
     <div class="closing-ornament"></div>
-    <p class="closing-date">✦ Sabtu, 14 Juni 2025 ✦</p>
+    <p class="closing-date">✦ Sabtu, 22 November 2030 ✦</p>
   </section>
 </div>
 
@@ -531,6 +568,18 @@
 </div>
 
 <!-- =============================================
+     AUDIO – Musik Latar
+     Lagu: Canon in D (Pachelbel) – Public domain
+     Ganti src dengan file musik Anda jika ingin
+     ============================================= -->
+<audio id="bg-music" loop preload="none">
+  <!-- Sumber 1: MIDI-to-MP3 Canon in D (gratis / public domain) -->
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  <!-- Fallback jika source utama gagal -->
+  <source src="https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3" type="audio/mpeg">
+</audio>
+
+<!-- =============================================
      TOAST NOTIFICATION
      ============================================= -->
 <div id="toast">✓ Disalin ke clipboard!</div>
@@ -540,6 +589,48 @@
      ============================================= -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/main.js"></script>
+<script>
+/* ── Musik latar ── */
+const audio     = document.getElementById('bg-music');
+const musicBtn  = document.getElementById('music-btn');
+const musicNav  = document.getElementById('music-nav-btn');
+const musicPl   = document.getElementById('music-player');
+let   isPlaying = false;
+
+function toggleMusic() {
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+    if (musicBtn) musicBtn.textContent = '🎵 Putar Musik';
+    if (musicNav) musicNav.textContent = '▶ Play';
+  } else {
+    audio.volume = 0.35;
+    audio.play().then(() => {
+      isPlaying = true;
+      if (musicBtn) musicBtn.textContent = '🔇 Pause Musik';
+      if (musicNav) musicNav.textContent = '⏸ Pause';
+      if (musicPl)  musicPl.style.display = 'flex';
+    }).catch(() => {
+      showToast('⚠ Klik sekali lagi untuk memutar musik');
+    });
+  }
+}
+
+// Tampilkan kontrol musik di navbar saat undangan dibuka
+const origOpen = window.openInvitation;
+window.openInvitation = function() {
+  document.getElementById('cover').classList.add('hidden');
+  document.getElementById('navbar').classList.add('visible');
+  if (musicPl) musicPl.style.display = 'flex';
+  // Auto-play saat undangan dibuka (perlu interaksi user dulu)
+  audio.volume = 0.35;
+  audio.play().then(() => {
+    isPlaying = true;
+    if (musicBtn) musicBtn.textContent = '🔇 Pause Musik';
+    if (musicNav) musicNav.textContent = '⏸ Pause';
+  }).catch(() => { /* browser mungkin blokir autoplay */ });
+};
+</script>
 
 </body>
 </html>

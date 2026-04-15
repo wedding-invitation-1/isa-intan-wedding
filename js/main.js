@@ -3,14 +3,27 @@
    main.js – Semua logika JavaScript
    ============================================= */
 
-/* ── CONFIG – Edit sesuai kebutuhan ── */
+/* ══════════════════════════════════════════════
+   ✏️  CONFIG – Edit semua data di sini
+   ══════════════════════════════════════════════
+   HITUNG MUNDUR: Cukup ubah weddingDate di bawah.
+   Format: 'YYYY-MM-DDTHH:MM:SS'
+   Contoh:  '2025-12-25T08:00:00'  = 25 Des 2025 pukul 08.00
+   ══════════════════════════════════════════════ */
 const CONFIG = {
-  weddingDate: new Date('2025-06-14T08:00:00'),
-  waNumber:    '6281219879171',   // Nomor WA tanpa tanda +
-  email:       'muhamadisafirdaus123n@gmail.com',
+  // ▼ Tanggal & jam pernikahan – ubah di sini, hitung mundur otomatis menyesuaikan
+  weddingDate: new Date('2030-11-22T08:00:00'),
+
+  waNumber:    '6281219879171',   // Nomor WA tanpa tanda + (contoh: 6281219879171)
+  email:       'muhamadisafirdaus123@gmail.com',
   mapLat:      -6.3955,
   mapLng:      106.8272,
   mapZoom:     15,
+
+  // ▼ Firebase Realtime Database URL
+  // Daftar gratis di https://firebase.google.com → buat project → Realtime Database
+  // Ganti URL di bawah dengan URL database Anda (akhiri dengan /)
+  firebaseUrl: 'https://couple-gallery-isa-default-rtdb.asia-southeast1.firebasedatabase.app//',
 };
 
 /* =========================================
@@ -115,50 +128,128 @@ function showFamily(side) {
 }
 
 /* =========================================
-   UCAPAN / WISHES – Real-time
+   UCAPAN / WISHES – Firebase Real-time Database
+   Semua tamu bisa melihat ucapan secara langsung
    ========================================= */
-const defaultWishes = [
-  { name:'Bunda Kartini', attend:'hadir', text:'Selamat menempuh hidup baru! Semoga sakinah, mawaddah, warahmah. Barakallahu lakuma.' },
-  { name:'Pak Andi & Keluarga', attend:'hadir', text:'Bahagia sekali mendengar kabar bahagia ini. Semoga menjadi keluarga yang selalu diberkahi Allah SWT. Aamiin.' },
-  { name:'Teman-teman Kampus', attend:'mungkin', text:'Congrats bestie! Wish you all the happiness in the world. Kalian memang jodoh sejati 🌸' },
-];
 
-let wishes = JSON.parse(localStorage.getItem('wedding_wishes') || 'null') || defaultWishes;
+/** Escape HTML untuk keamanan input */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-/** Render satu kartu ucapan */
+/** Buat elemen kartu ucapan */
 function createWishCard(w, isNew = false) {
   const el = document.createElement('div');
   el.className = 'wish-card' + (isNew ? ' new-wish' : '');
+  const attendLabel = w.attend === 'hadir' ? '✅ Hadir'
+                    : w.attend === 'tidak' ? '❌ Tidak Hadir'
+                    : '🤔 Mungkin';
   el.innerHTML = `
     <p class="wish-text">${escapeHtml(w.text)}</p>
     <div class="wish-meta">
       <span class="wish-name">— ${escapeHtml(w.name)}</span>
-      <span class="wish-attend ${w.attend}">${
-        w.attend === 'hadir'   ? '✅ Hadir' :
-        w.attend === 'tidak'   ? '❌ Tidak Hadir' :
-                                 '🤔 Mungkin'
-      }</span>
+      <span class="wish-attend ${w.attend}">${attendLabel}</span>
     </div>`;
   return el;
 }
 
-/** Escape HTML untuk keamanan input */
-function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* ─── Firebase REST listener ─── */
+let wishesCache = {};    // key → wish object
+let firstLoad   = true;
+
+/** Mulai mendengarkan perubahan dari Firebase secara real-time (SSE) */
+function startRealtimeListener() {
+  const url = CONFIG.firebaseUrl + 'wishes.json';
+
+  // Gunakan EventSource (Server-Sent Events) bawaan Firebase
+  try {
+    const es = new EventSource(url);
+
+    es.addEventListener('put', (e) => {
+      const data = JSON.parse(e.data);
+      if (data.path === '/' && data.data) {
+        // Load awal: semua data
+        wishesCache = data.data;
+        renderAllWishes();
+        firstLoad = false;
+      } else if (data.path !== '/' && data.data) {
+        // Data baru ditambahkan
+        const key = data.path.replace('/', '');
+        wishesCache[key] = data.data;
+        if (!firstLoad) {
+          prependWishCard(data.data);
+        }
+      } else if (data.path === '/' && !data.data) {
+        // Database kosong
+        wishesCache = {};
+        renderAllWishes();
+        firstLoad = false;
+      }
+    });
+
+    es.addEventListener('patch', (e) => {
+      const data = JSON.parse(e.data);
+      if (data.data) {
+        Object.assign(wishesCache, data.data);
+        renderAllWishes();
+      }
+    });
+
+    es.onerror = () => {
+      // Fallback ke polling jika SSE gagal
+      es.close();
+      pollWishes();
+    };
+  } catch (err) {
+    pollWishes();
+  }
 }
 
-/** Render semua ucapan */
-function renderWishes() {
+/** Fallback: polling tiap 5 detik jika SSE tidak tersedia */
+function pollWishes() {
+  fetchWishes();
+  setInterval(fetchWishes, 5000);
+}
+
+async function fetchWishes() {
+  try {
+    const res  = await fetch(CONFIG.firebaseUrl + 'wishes.json');
+    const data = await res.json();
+    wishesCache = data || {};
+    renderAllWishes();
+  } catch (e) { /* silent */ }
+}
+
+/** Render semua ucapan dari cache (terbaru di atas) */
+function renderAllWishes() {
   const container = document.getElementById('wishes-container');
+  const entries = Object.values(wishesCache);
+  if (!entries.length) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text-light);font-size:.85rem;padding:2rem;">Belum ada ucapan. Jadilah yang pertama! 💌</p>';
+    return;
+  }
+  // Urutkan: terbaru di atas (berdasarkan timestamp)
+  entries.sort((a, b) => (b.ts || 0) - (a.ts || 0));
   container.innerHTML = '';
-  [...wishes].reverse().forEach(w => {
-    container.appendChild(createWishCard(w, false));
-  });
+  entries.forEach(w => container.appendChild(createWishCard(w, false)));
 }
-renderWishes();
 
-/** Kirim ucapan baru – tampil real-time tanpa reload */
-function submitWish() {
+/** Sisipkan satu kartu baru di atas (real-time dari orang lain) */
+function prependWishCard(w) {
+  const container = document.getElementById('wishes-container');
+  // Hapus pesan "belum ada ucapan" jika ada
+  const empty = container.querySelector('p');
+  if (empty) container.innerHTML = '';
+  const card = createWishCard(w, true);
+  container.insertBefore(card, container.firstChild);
+  container.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/** Kirim ucapan ke Firebase */
+async function submitWish() {
   const name   = document.getElementById('wish-name').value.trim();
   const attend = document.getElementById('wish-attend').value;
   const text   = document.getElementById('wish-text').value.trim();
@@ -168,46 +259,89 @@ function submitWish() {
     return;
   }
 
-  const newWish = { name, attend, text };
-  wishes.push(newWish);
-  localStorage.setItem('wedding_wishes', JSON.stringify(wishes));
+  const btn = document.querySelector('#ucapan .btn-primary');
+  btn.disabled = true;
+  btn.textContent = 'Mengirim...';
 
-  /* Tampilkan real-time: sisipkan di atas tanpa rebuild semua */
-  const container = document.getElementById('wishes-container');
-  const card = createWishCard(newWish, true);
-  container.insertBefore(card, container.firstChild);
+  const wish = { name, attend, text, ts: Date.now() };
 
-  /* Scroll ke atas wishes grid */
-  container.scrollTo({ top: 0, behavior: 'smooth' });
+  try {
+    const res = await fetch(CONFIG.firebaseUrl + 'wishes.json', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(wish),
+    });
 
-  /* Reset form */
-  document.getElementById('wish-name').value    = '';
-  document.getElementById('wish-attend').value  = '';
-  document.getElementById('wish-text').value    = '';
+    if (!res.ok) throw new Error('Firebase error');
 
-  showToast('✓ Ucapan berhasil dikirim! 💌');
+    // Tampilkan langsung di UI (optimistic update)
+    prependWishCard(wish);
+
+    // Reset form
+    document.getElementById('wish-name').value   = '';
+    document.getElementById('wish-attend').value = '';
+    document.getElementById('wish-text').value   = '';
+
+    showToast('✓ Ucapan berhasil dikirim! 💌');
+  } catch (err) {
+    // Fallback ke localStorage jika offline
+    let local = JSON.parse(localStorage.getItem('wedding_wishes') || '[]');
+    local.push(wish);
+    localStorage.setItem('wedding_wishes', JSON.stringify(local));
+    prependWishCard(wish);
+    document.getElementById('wish-name').value   = '';
+    document.getElementById('wish-attend').value = '';
+    document.getElementById('wish-text').value   = '';
+    showToast('⚠ Tersimpan lokal (offline). Akan sync saat online.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Kirim Ucapan ✉';
+  }
 }
 
+// Mulai listener saat halaman siap
+startRealtimeListener();
+
 /* =========================================
-   RSVP – WhatsApp & Email
+   RSVP – WhatsApp (langsung terkirim) & Email
    ========================================= */
 function buildMessage() {
   const name  = document.getElementById('rsvp-name').value.trim() || '(Nama tidak diisi)';
   const count = document.getElementById('rsvp-count').value;
   const msg   = document.getElementById('rsvp-msg').value.trim() || '-';
-  return `Assalamu'alaikum, saya *${name}* akan hadir dalam acara pernikahan Isa & Intan bersama *${count}* tamu.\n\nPesan: ${msg}\n\n_Terkirim dari undangan online_`;
+  return `Assalamu'alaikum, saya *${name}* akan hadir dalam acara pernikahan Isa & Intan bersama *${count}*.\n\nPesan: ${msg}\n\n_Terkirim dari undangan online_`;
 }
 
+/** WA: buka langsung ke chat dengan pesan terisi */
 function sendViaWA() {
-  const text = encodeURIComponent(buildMessage());
+  const name  = document.getElementById('rsvp-name').value.trim();
+  const count = document.getElementById('rsvp-count').value;
+  const msg   = document.getElementById('rsvp-msg').value.trim() || '-';
+  if (!name) { showToast('⚠ Isi nama terlebih dahulu!'); return; }
+
+  const text = encodeURIComponent(
+    `Assalamu'alaikum, saya *${name}* akan hadir dalam acara pernikahan Isa & Intan bersama *${count}*.\n\nPesan: ${msg}\n\n_Terkirim dari undangan online_`
+  );
+  // wa.me membuka WA langsung ke chat tanpa perlu simpan kontak
   window.open(`https://wa.me/${CONFIG.waNumber}?text=${text}`, '_blank');
 }
 
+/** Email: gunakan mailto yang sudah diformat lengkap */
 function sendViaEmail() {
-  const name = document.getElementById('rsvp-name').value.trim() || '(Nama tidak diisi)';
-  const body = encodeURIComponent(buildMessage());
-  const sub  = encodeURIComponent(`RSVP Pernikahan Isa & Intan – ${name}`);
-  window.open(`mailto:${CONFIG.email}?subject=${sub}&body=${body}`, '_blank');
+  const name  = document.getElementById('rsvp-name').value.trim() || '(Nama tidak diisi)';
+  const count = document.getElementById('rsvp-count').value;
+  const msg   = document.getElementById('rsvp-msg').value.trim() || '-';
+
+  const subject = encodeURIComponent(`RSVP Pernikahan Isa & Intan – ${name}`);
+  // Gunakan %0D%0A (CRLF) untuk baris baru di mailto yang kompatibel lintas client
+  const body = encodeURIComponent(
+    `Assalamu'alaikum,\r\n\r\nSaya ${name} akan hadir dalam acara pernikahan Isa & Intan bersama ${count}.\r\n\r\nPesan: ${msg}\r\n\r\nTerkirim dari undangan online.`
+  );
+
+  const mailtoUrl = `mailto:${CONFIG.email}?subject=${subject}&body=${body}`;
+  const a = document.createElement('a');
+  a.href = mailtoUrl;
+  a.click();
 }
 
 /* =========================================

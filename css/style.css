@@ -583,6 +583,16 @@ footer {
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
 
+/* ── MUSIK BUTTON (di cover) ── */
+#music-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: transparent; border: 1px solid rgba(201,169,110,.5);
+  color: var(--gold-light); font-family: 'Lato', sans-serif; font-weight: 300;
+  letter-spacing: .15em; font-size: .75rem; text-transform: uppercase;
+  padding: .6rem 1.6rem; cursor: pointer; transition: all .3s; border-radius: 20px;
+}
+#music-btn:hover { background: rgba(201,169,110,.15); border-color: var(--gold); color: var(--gold); }
+
 /* ── SCROLL REVEAL ── */
 .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
