@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Undangan Pernikahan – Isa & Intan</title>
+  <!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  ✏️  PANDUAN EDIT CEPAT                              ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  1. HITUNG MUNDUR                                    ║
+  ║     Buka js/main.js → ubah baris:                   ║
+  ║     weddingDate: new Date('YYYY-MM-DDTHH:MM:SS')    ║
+  ║     Contoh: new Date('2025-12-25T08:00:00')          ║
+  ║     Hitung mundur otomatis menyesuaikan!             ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  2. DATABASE UCAPAN (Firebase – Gratis)              ║
+  ║     a. Buka https://firebase.google.com              ║
+  ║     b. Buat project baru                             ║
+  ║     c. Build → Realtime Database → Create database   ║
+  ║     d. Rules → set "read": true, "write": true       ║
+  ║     e. Salin URL database (akhiri dengan /)          ║
+  ║     f. Tempel di js/main.js → CONFIG.firebaseUrl    ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  3. NOMOR WA & EMAIL                                 ║
+  ║     Buka js/main.js → ubah CONFIG.waNumber & email  ║
+  ╚══════════════════════════════════════════════════════╝
+  -->
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel+Decorative:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS (Peta) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Stylesheet Utama -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- =============================================
+     COVER
+     ============================================= -->
+<div id="cover">
+  <div class="cover-petals" id="petals"></div>
+  <div class="cover-inner">
+    <div class="cover-ornament"></div>
+    <p class="cover-subtitle">Undangan Pernikahan</p>
+    <div class="cover-names">
+      <span>Isa</span>
+      <span class="cover-amp">&</span>
+      <span>Intan</span>
+    </div>
+    <p class="cover-date">Sabtu, 22 November 2030</p>
+    <!-- Tombol musik muncul di cover -->
+    <div id="music-cover" style="margin-top:1.5rem;">
+      <button id="music-btn" onclick="toggleMusic()" title="Putar / Pause musik">
+        🎵 Putar Musik
+      </button>
+    </div>
+    <button class="btn-open" onclick="openInvitation()">✉ Buka Undangan</button>
+  </div>
+</div>
+
+<!-- =============================================
+     NAVBAR
+     Hamburger aktif di layar < 900px
+     ============================================= -->
+<nav id="navbar">
+  <div class="nav-logo">Isa & Intan</div>
+
+  <!-- Music player floating (navbar) -->
+  <div id="music-player" style="display:none; align-items:center; gap:.5rem; margin-left:auto; margin-right:1rem;">
+    <button id="music-nav-btn" onclick="toggleMusic()" title="Putar / Pause musik"
+      style="background:none;border:1px solid var(--gold-light);color:var(--gold-dark);
+             font-size:.7rem;letter-spacing:.1em;padding:.3rem .8rem;cursor:pointer;
+             border-radius:20px;transition:all .25s;white-space:nowrap;">
+      ⏸ Pause
+    </button>
+  </div>
+
+  <!-- Hamburger button (mobile/tablet) -->
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <ul class="nav-links" id="navlinks">
+    <li><a href="#hero"      onclick="closeMenu()">Home</a></li>
+    <li><a href="#mempelai"  onclick="closeMenu()">Mempelai</a></li>
+    <li><a href="#acara"     onclick="closeMenu()">Acara</a></li>
+    <li><a href="#gallery"   onclick="closeMenu()">Galeri</a></li>
+    <li><a href="#keluarga"  onclick="closeMenu()">Keluarga</a></li>
+    <li><a href="#ucapan"    onclick="closeMenu()">Ucapan</a></li>
+    <li><a href="#hadiah"    onclick="closeMenu()">Hadiah</a></li>
+    <li><a href="#rsvp"      onclick="closeMenu()">RSVP</a></li>
+  </ul>
+</nav>
+
+<!-- =============================================
+     HERO – Ayat & Nama
+     ============================================= -->
+<section id="hero">
+  <div class="hero-bg-circle hbc1"></div>
+  <div class="hero-bg-circle hbc2"></div>
+  <div class="hero-content reveal">
+    <p class="hero-ayat">"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya."</p>
+    <p class="hero-ayat-src">— QS. Ar-Rum: 21</p>
+    <div class="hero-big-names">
+      Isa <span class="amp">&</span> Intan
+    </div>
+    <div class="hero-date-badge">
+      <span class="badge-dot"></span>
+      Sabtu, 22 November 2030
+      <span class="badge-dot"></span>
+      Bogor
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     COUNTDOWN
+     ============================================= -->
+<div id="countdown-section">
+  <section>
+    <p class="section-label">Menuju Hari Bahagia</p>
+    <h2 class="section-title">Hitung Mundur</h2>
+    <div class="section-divider"><span class="divider-icon">✦</span></div>
+    <div class="countdown-grid">
+      <div class="cd-box"><div class="cd-num" id="cd-days">00</div><div class="cd-label">Hari</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-hours">00</div><div class="cd-label">Jam</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-mins">00</div><div class="cd-label">Menit</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-box"><div class="cd-num" id="cd-secs">00</div><div class="cd-label">Detik</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- =============================================
+     MEMPELAI
+     Foto pengantin: ganti emoji dengan
+     <img src="images/pengantin/isa.jpg" alt="Isa">
+     ============================================= -->
+<section id="mempelai" class="reveal">
+  <p class="section-label">Dengan Penuh Syukur</p>
+  <h2 class="section-title">Kami Yang Berbahagia</h2>
+  <div class="section-divider"><span class="divider-icon">❧</span></div>
+  <div class="couple-grid">
+
+    <!-- Mempelai Pria -->
+    <div class="couple-card">
+      <div class="couple-photo">
+        <!-- Ganti baris di bawah dengan: <img src="images/pengantin/isa.jpg" alt="Isa Firdaus"> -->
+        🤵
+      </div>
+      <div class="couple-name">Isa</div>
+      <div class="couple-fullname">Muhamad Isa Firdaus</div>
+      <div class="couple-parents">
+        Putra dari<br/>
+        <strong>Bapak -</strong> &amp; <strong>Ibu -</strong>
+      </div>
+    </div>
+
+    <div class="couple-center">
+      <div class="center-amp">&</div>
+    </div>
+
+    <!-- Mempelai Wanita -->
+    <div class="couple-card">
+      <div class="couple-photo">
+        <!-- Ganti baris di bawah dengan: <img src="images/pengantin/intan.jpg" alt="Intan Hastari"> -->
+        👰
+      </div>
+      <div class="couple-name">Intan</div>
+      <div class="couple-fullname">Intan Hastari Prasetiani</div>
+      <div class="couple-parents">
+        Putri dari<br/>
+        <strong>Bapak -</strong> &amp; <strong>Ibu -</strong>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =============================================
+     ACARA
+     ============================================= -->
+<div id="acara" style="background:linear-gradient(180deg,#fdf8f2,#fff)">
+  <section class="reveal">
+    <p class="section-label">Rangkaian Acara</p>
+    <h2 class="section-title">Momen Istimewa</h2>
+    <div class="section-divider"><span class="divider-icon">✦</span></div>
+    <div class="event-cards">
+
+      <div class="event-card">
+        <div class="event-icon">💍</div>
+        <div class="event-type">Akad Nikah</div>
+        <div class="event-name">Ijab Qabul</div>
+        <div class="event-detail">
+          <strong>Sabtu, 22 November 2030</strong><br/>
+          08.00 – 10.00 WIB<br/>
+          Masjid Baiturrahman<br/>
+          Jl. Margonda Raya No. 1, Depok
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-icon">🎊</div>
+        <div class="event-type">Resepsi Pernikahan</div>
+        <div class="event-name">Walimatul Ursy</div>
+        <div class="event-detail">
+          <strong>Sabtu, 22 November 2030</strong><br/>
+          11.00 – 15.00 WIB<br/>
+          Gedung Graha Pesona<br/>
+          Jl. Siliwangi No. 45, Depok
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-icon">🌸</div>
+        <div class="event-type">Pengajian</div>
+        <div class="event-name">Malam Pengajian</div>
+        <div class="event-detail">
+          <strong>Jumat, 13 Juni 2025</strong><br/>
+          19.30 – 22.00 WIB<br/>
+          Kediaman Keluarga Mempelai<br/>
+          Jl. Anggrek No. 12, Depok
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- =============================================
+     MAP – Lokasi Acara
+     ============================================= -->
+<div id="map-section" style="background:#fdf8f2; padding:0 0 4rem;">
+  <section class="reveal" style="padding-top:0">
+    <p class="section-label" style="padding-top:4rem">Lokasi Acara</p>
+    <h2 class="section-title">Petunjuk Arah</h2>
+    <div class="section-divider"><span class="divider-icon">📍</span></div>
+    <div class="map-wrapper">
+      <div id="map"></div>
+      <div class="map-address">
+        <div class="map-address-icon">📍</div>
+        <div>
+          <strong>Gedung Graha Pesona</strong>
+          <p>Jl. Siliwangi No. 45, Pancoran Mas, Depok, Jawa Barat 16436</p>
+        </div>
+        <a class="btn-maps" href="https://maps.google.com/?q=Gedung+Graha+Pesona+Depok" target="_blank">
+          🗺 Buka Maps
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- =============================================
+     GALLERY
+     Untuk mengganti foto:
+     Hapus <div class="placeholder">...</div>
+     Ganti dengan <img src="images/galeri/galeri-N.jpg" alt="...">
+     ============================================= -->
+<section id="gallery" class="reveal">
+  <p class="section-label">Kenangan Bersama</p>
+  <h2 class="section-title">Galeri Foto</h2>
+  <div class="section-divider"><span class="divider-icon">📷</span></div>
+  <div class="gallery-grid">
+
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-1.jpg" alt="Foto 1"> -->
+      <div class="placeholder">📸</div>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-2.jpg" alt="Foto 2"> -->
+      <div class="placeholder">📷</div>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-3.jpg" alt="Foto 3"> -->
+      <div class="placeholder">🌸</div>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-4.jpg" alt="Foto 4"> -->
+      <div class="placeholder">💑</div>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-5.jpg" alt="Foto 5"> -->
+      <div class="placeholder">🌹</div>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-6.jpg" alt="Foto 6"> -->
+      <div class="placeholder">✨</div>
+    </div>
+    <div class="gallery-item" onclick="openLightbox(this)">
+      <!-- <img src="images/galeri/galeri-7.jpg" alt="Foto 7"> -->
+      <div class="placeholder">💍</div>
+    </div>
+
+  </div>
+  <p style="text-align:center; margin-top:1.5rem; font-size:.78rem; color:var(--text-light); letter-spacing:.1em;">
+    ↑ Hapus komentar di atas dan tambahkan foto di folder <code>images/galeri/</code>
+  </p>
+</section>
+
+<!-- =============================================
+     KELUARGA BESAR
+     Untuk foto keluarga: ganti emoji di .family-avatar
+     dengan <img src="images/keluarga/nama.jpg" alt="...">
+     ============================================= -->
+<section id="keluarga" class="reveal" style="background:var(--white)">
+  <p class="section-label">Turut Berbahagia</p>
+  <h2 class="section-title">Keluarga Besar</h2>
+  <div class="section-divider"><span class="divider-icon">👨‍👩‍👧‍👦</span></div>
+  <div class="family-tabs">
+    <button class="family-tab active" onclick="showFamily('pria')">Keluarga Mempelai Pria</button>
+    <button class="family-tab" onclick="showFamily('wanita')">Keluarga Mempelai Wanita</button>
+  </div>
+
+  <!-- Keluarga Pria -->
+  <div id="family-pria" class="family-panel active">
+    <div class="family-grid">
+      <div class="family-card">
+        <div class="family-avatar">👨</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Ayah Mempelai Pria</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👩</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Ibu Mempelai Pria</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👦</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Pria</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👧</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Pria</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👴</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Kakek Mempelai Pria</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👵</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Nenek Mempelai Pria</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keluarga Wanita -->
+  <div id="family-wanita" class="family-panel">
+    <div class="family-grid">
+      <div class="family-card">
+        <div class="family-avatar">👨</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Ayah Mempelai Wanita</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👩</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Ibu Mempelai Wanita</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👧</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Wanita</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👦</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Saudara Mempelai Wanita</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👴</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Kakek Mempelai Wanita</div>
+      </div>
+      <div class="family-card">
+        <div class="family-avatar">👵</div>
+        <div class="family-name">-</div>
+        <div class="family-role">Nenek Mempelai Wanita</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     UCAPAN & DOA – Real-time
+     ============================================= -->
+<section id="ucapan" class="reveal">
+  <p class="section-label">Kata-kata Doa & Ucapan</p>
+  <h2 class="section-title">Kirim Ucapan</h2>
+  <div class="section-divider"><span class="divider-icon">💌</span></div>
+
+  <div class="ucapan-form">
+    <div class="form-row">
+      <div class="form-field">
+        <label for="wish-name">Nama Lengkap *</label>
+        <input type="text" id="wish-name" placeholder="Nama Anda" />
+      </div>
+      <div class="form-field">
+        <label for="wish-attend">Kehadiran *</label>
+        <select id="wish-attend">
+          <option value="" disabled selected>-- Pilih --</option>
+          <option value="hadir">✅ Hadir</option>
+          <option value="tidak">❌ Tidak Hadir</option>
+          <option value="mungkin">🤔 Mungkin Hadir</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label for="wish-text">Doa & Ucapan *</label>
+      <textarea id="wish-text" rows="4" placeholder="Tuliskan doa dan ucapan terbaik Anda untuk pengantin..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="submitWish()">Kirim Ucapan ✉</button>
+  </div>
+
+  <h3 style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.4rem; color:var(--brown); text-align:center; margin-bottom:1.5rem;">Ucapan Tamu</h3>
+  <div class="wishes-grid" id="wishes-container"></div>
+</section>
+
+<!-- =============================================
+     RSVP & KIRIM PESAN
+     ============================================= -->
+<div id="rsvp" style="background:var(--brown); padding-bottom:5rem;">
+  <section class="reveal">
+    <p class="section-label">Konfirmasi Kehadiran</p>
+    <h2 class="section-title">RSVP & Hubungi Kami</h2>
+    <div class="section-divider"><span class="divider-icon">✉</span></div>
+    <p style="text-align:center; color:var(--gold-light); font-size:.85rem; margin-bottom:2rem; max-width:500px; margin-left:auto; margin-right:auto; line-height:1.7;">
+      Konfirmasi kehadiran Anda atau kirim pesan langsung kepada kami:
+    </p>
+
+    <div style="max-width:600px; margin:0 auto;">
+      <div class="form-row" style="margin-bottom:1rem;">
+        <div class="form-field">
+          <label for="rsvp-name" style="color:var(--gold-light)">Nama</label>
+          <input type="text" id="rsvp-name" placeholder="Nama Anda" />
+        </div>
+        <div class="form-field">
+          <label for="rsvp-count" style="color:var(--gold-light)">Jumlah Tamu</label>
+          <!-- Perbaikan: option dibuat visible dengan warna kontras -->
+          <select id="rsvp-count">
+            <option value="1 orang">1 orang</option>
+            <option value="2 orang">2 orang</option>
+            <option value="3 orang">3 orang</option>
+            <option value="4 orang">4 orang</option>
+            <option value="5 orang">5 orang</option>
+            <option value="6+ orang">6+ orang</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field" style="margin-bottom:1.5rem;">
+        <label for="rsvp-msg" style="color:var(--gold-light)">Pesan</label>
+        <textarea id="rsvp-msg" rows="3" placeholder="Tuliskan pesan atau pertanyaan Anda..."></textarea>
+      </div>
+      <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+        <button class="btn-primary" onclick="sendViaWA()" style="background:var(--gold);">💬 Kirim via WA</button>
+        <button class="btn-primary" onclick="sendViaEmail()" style="background:transparent; border:1px solid var(--gold); color:var(--gold);">📧 Kirim via Email</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- =============================================
+     HADIAH PERNIKAHAN
+     ============================================= -->
+<section id="hadiah" class="reveal" style="background:#fdf8f2">
+  <p class="section-label">Hadiah Pernikahan</p>
+  <h2 class="section-title">Kirim Hadiah</h2>
+  <div class="section-divider"><span class="divider-icon">🎁</span></div>
+  <p style="text-align:center; color:var(--text-light); font-size:.85rem; margin-bottom:2.5rem; max-width:500px; margin-left:auto; margin-right:auto; line-height:1.8;">
+    Doa restu Anda adalah hadiah terbaik bagi kami. Namun jika ingin memberikan hadiah, Anda dapat mengirimkan melalui:
+  </p>
+  <div class="gift-cards">
+
+    <div class="gift-card">
+      <div class="gift-icon">🏦</div>
+      <div class="gift-bank">Bank BCA</div>
+      <div class="gift-acc-name">A/N Isa Firmansyah</div>
+      <div class="gift-acc-num">1234 5678 9012</div>
+      <button class="btn-copy" onclick="copyText('123456789012', this)">📋 Salin Nomor</button>
+    </div>
+
+    <div class="gift-card">
+      <div class="gift-icon">🏛️</div>
+      <div class="gift-bank">Bank Mandiri</div>
+      <div class="gift-acc-name">A/N Intan Rahmawati</div>
+      <div class="gift-acc-num">9876 5432 1098</div>
+      <button class="btn-copy" onclick="copyText('987654321098', this)">📋 Salin Nomor</button>
+    </div>
+
+    <div class="gift-card">
+      <div class="gift-icon">💚</div>
+      <div class="gift-bank">GoPay / Dana</div>
+      <div class="gift-acc-name">A/N Isa Firmansyah</div>
+      <div class="gift-acc-num">0812 3456 7890</div>
+      <button class="btn-copy" onclick="copyText('081234567890', this)">📋 Salin Nomor</button>
+    </div>
+
+    <div class="gift-card">
+      <div class="gift-icon">📦</div>
+      <div class="gift-bank">Kirim Fisik</div>
+      <div class="gift-acc-name">Alamat Pengiriman</div>
+      <div style="font-size:.8rem; color:var(--text-light); line-height:1.7; margin-bottom:1rem;">
+        Jl. Anggrek No. 12, Pancoran Mas<br/>Depok, Jawa Barat 16436
+      </div>
+      <button class="btn-copy" onclick="copyText('Jl. Anggrek No. 12, Pancoran Mas, Depok, Jawa Barat 16436', this)">📋 Salin Alamat</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- =============================================
+     PROTOKOL KEHADIRAN
+     ============================================= -->
+<section id="protokol" class="reveal" style="background:var(--white)">
+  <p class="section-label">Aturan Tamu</p>
+  <h2 class="section-title">Protokol Kehadiran</h2>
+  <div class="section-divider"><span class="divider-icon">🌿</span></div>
+  <div class="protokol-grid">
+    <div class="proto-card"><div class="proto-icon">👔</div><div class="proto-title">Dresscode</div><div class="proto-desc">Pakaian formal/semi-formal. Warna pastel atau netral diutamakan.</div></div>
+    <div class="proto-card"><div class="proto-icon">⏰</div><div class="proto-title">Tepat Waktu</div><div class="proto-desc">Kami mengundang Anda hadir tepat waktu sesuai jadwal acara.</div></div>
+    <div class="proto-card"><div class="proto-icon">📵</div><div class="proto-title">Senyap Ponsel</div><div class="proto-desc">Mohon matikan atau senyapkan ponsel selama akad nikah.</div></div>
+    <div class="proto-card"><div class="proto-icon">🤝</div><div class="proto-title">Tertib & Sopan</div><div class="proto-desc">Menjaga ketertiban dan ketenangan selama berlangsungnya acara.</div></div>
+    <div class="proto-card"><div class="proto-icon">📸</div><div class="proto-title">Foto Bersama</div><div class="proto-desc">Sesi foto bersama akan diadakan setelah akad dan resepsi.</div></div>
+    <div class="proto-card"><div class="proto-icon">🌸</div><div class="proto-title">Selamat Menikmati</div><div class="proto-desc">Nikmati hidangan dan hiburan yang kami sediakan dengan gembira.</div></div>
+  </div>
+</section>
+
+<!-- =============================================
+     CLOSING
+     ============================================= -->
+<div id="closing">
+  <section style="text-align:center; margin:0 auto;">
+    <p class="closing-label">Terima Kasih</p>
+    <h2 class="closing-title">Isa <span class="amp">&</span> Intan</h2>
+    <p class="closing-quote">
+      "Kami mengundang Anda dengan sepenuh hati untuk turut menyaksikan dan mendoakan kami dalam memulai babak baru kehidupan ini."
+    </p>
+    <div class="closing-ornament"></div>
+    <p class="closing-date">✦ Sabtu, 22 November 2030 ✦</p>
+  </section>
+</div>
+
+<!-- =============================================
+     FOOTER
+     ============================================= -->
+<footer>
+  &copy; 2025 Isa & Intan Wedding · Dibuat dengan ❤️ menggunakan GitHub Pages
+</footer>
+
+<!-- =============================================
+     LIGHTBOX
+     ============================================= -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="" />
+</div>
+
+<!-- =============================================
+     AUDIO – Musik Latar
+     Lagu: Canon in D (Pachelbel) – Public domain
+     Ganti src dengan file musik Anda jika ingin
+     ============================================= -->
+<audio id="bg-music" loop preload="none">
+  <!-- Sumber 1: MIDI-to-MP3 Canon in D (gratis / public domain) -->
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  <!-- Fallback jika source utama gagal -->
+  <source src="https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3" type="audio/mpeg">
+</audio>
+
+<!-- =============================================
+     TOAST NOTIFICATION
+     ============================================= -->
+<div id="toast">✓ Disalin ke clipboard!</div>
+
+<!-- =============================================
+     SCRIPTS
+     ============================================= -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/main.js"></script>
+<script>
+/* ── Musik latar ── */
+const audio     = document.getElementById('bg-music');
+const musicBtn  = document.getElementById('music-btn');
+const musicNav  = document.getElementById('music-nav-btn');
+const musicPl   = document.getElementById('music-player');
+let   isPlaying = false;
+
+function toggleMusic() {
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+    if (musicBtn) musicBtn.textContent = '🎵 Putar Musik';
+    if (musicNav) musicNav.textContent = '▶ Play';
+  } else {
+    audio.volume = 0.35;
+    audio.play().then(() => {
+      isPlaying = true;
+      if (musicBtn) musicBtn.textContent = '🔇 Pause Musik';
+      if (musicNav) musicNav.textContent = '⏸ Pause';
+      if (musicPl)  musicPl.style.display = 'flex';
+    }).catch(() => {
+      showToast('⚠ Klik sekali lagi untuk memutar musik');
+    });
+  }
+}
+
+// Tampilkan kontrol musik di navbar saat undangan dibuka
+const origOpen = window.openInvitation;
+window.openInvitation = function() {
+  document.getElementById('cover').classList.add('hidden');
+  document.getElementById('navbar').classList.add('visible');
+  if (musicPl) musicPl.style.display = 'flex';
+  // Auto-play saat undangan dibuka (perlu interaksi user dulu)
+  audio.volume = 0.35;
+  audio.play().then(() => {
+    isPlaying = true;
+    if (musicBtn) musicBtn.textContent = '🔇 Pause Musik';
+    if (musicNav) musicNav.textContent = '⏸ Pause';
+  }).catch(() => { /* browser mungkin blokir autoplay */ });
+};
+</script>
+
+</body>
+</html>
